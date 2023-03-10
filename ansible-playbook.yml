@@ -4,8 +4,51 @@
   hosts: portainer
   become: true
   tasks:
-    - name: Install apt-transport-https
+    - name: Update apt cache
       apt:
-        name: apt-transport-https
+        update_cache: yes
+    
+    - name: "Install prerequesites"
+      apt: 
+        name: 
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
         state: present
+    
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_lsb.codename }} stable
+        state: present
+    
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    
+    - name: "Install Docker packages"
+      apt: 
+        name: 
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+    
+    - name: "Create group Docker"
+      group: 
+        name: docker
+      
+    - name: Add user antonio to group mygroup
+      user:
+        name: antonio
+        groups: docker
+
+
     
