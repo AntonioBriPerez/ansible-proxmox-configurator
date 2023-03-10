@@ -1,13 +1,52 @@
-# playbook.yml
----
-- name: Install Nginx on web server
-  hosts: portainer
 
+- name: Prepare proxmox host
+  hosts: proxmox
   become: true
+  tasks: 
+  
+  - name: Add disk to the machine
+    shell: /sbin/qm set 100 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+    register: shell_output
+  - name: Display added HDD to VM in proxmox server
+    debug: 
+      var: shell_output.stdout_lines
+
+
+
+- name: Install and deploy plex server on machine
+  hosts: plex_server
+  become: true
+
+
   tasks:
     - name: Update apt cache
       apt:
         update_cache: yes
+        
+    - name: Install ntfs-3g
+      apt: 
+        name: ntfs-3g
+
+    - name: Configure folder mnt
+      file: 
+        path: /mnt/ocean
+        mode: '0755'
+        state: directory
+
+
+    - name: Check if mount point exists
+      stat:
+        path: /mnt/ocean
+      register: mount_point_stat
+
+    - name: Mount the volume if not already mounted
+      mount:
+        name: /mnt/ocean
+        src: /dev/vda
+        fstype: ntfs
+        state: mounted
+        opts: defaults
+      
     
     - name: "Install prerequesites"
       apt: 
@@ -16,7 +55,6 @@
           - curl
           - gnupg
           - lsb-release
-          - ntfs-3g
           - pip
         state: present
     
@@ -79,6 +117,8 @@
           - docker
           - PyYAML
         state: present
+
+
     - name: Start the container
       docker_compose: 
         project_name: plex-server
