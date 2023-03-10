@@ -1,52 +1,12 @@
-
-- name: Prepare proxmox host
-  hosts: proxmox
-  become: true
-  tasks: 
-  
-  - name: Add disk to the machine
-    shell: /sbin/qm set 100 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
-    register: shell_output
-  - name: Display added HDD to VM in proxmox server
-    debug: 
-      var: shell_output.stdout_lines
-
-
-
-- name: Install and deploy plex server on machine
-  hosts: plex_server
+- name: Install and deploy wireguard server on machine
+  hosts: wireguard_server
   become: true
 
 
   tasks:
     - name: Update apt cache
       apt:
-        update_cache: yes
-        
-    - name: Install ntfs-3g
-      apt: 
-        name: ntfs-3g
-
-    - name: Configure folder mnt
-      file: 
-        path: /mnt/ocean
-        mode: '0755'
-        state: directory
-
-
-    - name: Check if mount point exists
-      stat:
-        path: /mnt/ocean
-      register: mount_point_stat
-
-    - name: Mount the volume if not already mounted
-      mount:
-        name: /mnt/ocean
-        src: /dev/vda
-        fstype: ntfs
-        state: mounted
-        opts: defaults
-      
+        update_cache: yes      
     
     - name: "Install prerequesites"
       apt: 
@@ -97,19 +57,11 @@
         name: docker
         state: restarted
           
-    - name: Get plex-server repo
+    - name: Get wireguard-server repo
       git: 
-        repo: https://github.com/AntonioBriPerez/plex-server
-        dest: ~/git_repos/plex-server
-        
-    
-    - name: Generate .env file
-      copy: 
-        dest: ~/git_repos/plex-server/.env
-        content: | 
-              MEDIA=/mnt/ocean/antonio_hdd_3tb/PlexServer
-              STORAGE=/mnt/ocean/antonio_hdd_3tb/PlexServer/Downloads/torrents
-              ROOT=/mnt/ocean/antonio_hdd_3tb/
+        repo: https://github.com/AntonioBriPerez/wireguard-vpn
+        dest: ~/git_repos/wireguard-server
+
 
     - name: "Install pip packages"
       pip: 
@@ -121,7 +73,14 @@
 
     - name: Start the container
       docker_compose: 
-        project_name: plex-server
-        project_src: ~/git_repos/plex-server/
+        project_name: wireguard-server
+        project_src: ~/git_repos/wireguard-server/
         files: docker-compose.yml
         state: present
+
+
+    
+
+
+
+    
