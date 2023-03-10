@@ -2,6 +2,7 @@
 ---
 - name: Install Nginx on web server
   hosts: portainer
+
   become: true
   tasks:
     - name: Update apt cache
@@ -15,6 +16,8 @@
           - curl
           - gnupg
           - lsb-release
+          - ntfs-3g
+          - pip
         state: present
     
     - name: Add Docker GPG key
@@ -39,6 +42,7 @@
           - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
+          - docker-compose
         state: present
     
     - name: "Create group Docker"
@@ -49,6 +53,42 @@
       user:
         name: antonio
         groups: docker
+
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
+          
+    - name: Get plex-server repo
+      git: 
+        repo: https://github.com/AntonioBriPerez/plex-server
+        dest: ~/git_repos/plex-server
+        
+    
+    - name: Generate .env file
+      copy: 
+        dest: ~/git_repos/plex-server/.env
+        content: | 
+              MEDIA=/mnt/ocean/antonio_hdd_3tb/PlexServer
+              STORAGE=/mnt/ocean/antonio_hdd_3tb/PlexServer/Downloads/torrents
+              ROOT=/mnt/ocean/antonio_hdd_3tb/
+
+    - name: "Install pip packages"
+      pip: 
+        name: 
+          - docker
+          - PyYAML
+        state: present
+    - name: Start the container
+      docker_compose: 
+        project_name: plex-server
+        project_src: ~/git_repos/plex-server/
+        files: docker-compose.yml
+        state: present
+
+
+    
+
 
 
     
