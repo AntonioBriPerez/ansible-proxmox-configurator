@@ -3,10 +3,11 @@
   gather_facts: false
   become: true
   vars:
-    vm_id: 101
+    vm_id: hostvars[plex_server]['vm_id']
   tasks:
     - name: Add disk to the machine
-      shell: /sbin/qm set "{{ vm_id }}" -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+      shell: /sbin/qm set "{{ hostvars['plex']['vm_id'] }}" -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+
       register: shell_output
     - name: Display added HDD to VM in proxmox server
       debug:
