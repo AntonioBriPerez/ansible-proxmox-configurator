@@ -46,9 +46,9 @@
       group:
         name: docker
 
-    - name: Add user antonio to group mygroup
+    - name: Add user anton to group mygroup
       user:
-        name: antonio
+        name: anton
         groups: docker
 
     - name: Restart Docker
