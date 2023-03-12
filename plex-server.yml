@@ -15,81 +15,13 @@
   become: true
   gather_facts: false
   tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
+    - name: Configure hard drive mount
+      include_role:
+        name: hard_drive_mount
 
-    - name: Install ntfs-3g
-      apt:
-        name: ntfs-3g
-
-    - name: Configure folder mnt
-      file:
-        path: /mnt/ocean
-        mode: "0755"
-        state: directory
-
-    - name: Check if mount point exists
-      stat:
-        path: /mnt/ocean
-      register: mount_point_stat
-
-    - name: Mount the volume if not already mounted
-      mount:
-        name: /mnt/ocean
-        src: /dev/vdb
-        fstype: ntfs
-        state: mounted
-        opts: defaults
-
-    - name: "Install prerequesites"
-      apt:
-        name:
-          - ca-certificates
-          - curl
-          - gnupg
-          - lsb-release
-          - pip
-        state: present
-
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-        state: present
-
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-
-    - name: "Install Docker packages"
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-          - docker-compose
-        state: present
-
-    - name: "Create group Docker"
-      group:
+    - name: Install and configure Docker
+      include_role:
         name: docker
-
-    - name: Add user anton to group mygroup
-      user:
-        name: anton
-        groups: docker
-
-    - name: Restart Docker
-      systemd:
-        name: docker
-        state: restarted
 
     - name: Get plex-server repo
       git:
