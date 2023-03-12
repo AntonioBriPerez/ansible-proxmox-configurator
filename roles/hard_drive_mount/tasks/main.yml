@@ -1,0 +1,26 @@
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install ntfs-3g
+  apt:
+    name: ntfs-3g
+
+- name: Configure folder mnt
+  file:
+    path: /mnt/ocean
+    mode: "0755"
+    state: directory
+
+- name: Check if mount point exists
+  stat:
+    path: /mnt/ocean
+  register: mount_point_stat
+
+- name: Mount the volume if not already mounted
+  mount:
+    name: /mnt/ocean
+    src: /dev/vdb
+    fstype: ntfs
+    state: mounted
+    opts: defaults
