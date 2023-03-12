@@ -2,9 +2,12 @@
   hosts: proxmox
   gather_facts: false
   become: true
+  vars:
+    vm_id: 100
+
   tasks:
     - name: Add disk to the machine
-      shell: /sbin/qm set 100 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+      shell: /sbin/qm set "{{ vm_id }}" -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
       register: shell_output
     - name: Display added HDD to VM in proxmox server
       debug:
@@ -14,49 +17,57 @@
   hosts: samba_server
   become: true
   gather_facts: false
+  vars:
+    repo_url: git@github.com:AntonioBriPerez/samba-server.git
+    repo_route: ~/git_repos/samba-server/
+    ssh_priv_key: ~/.ssh/id_rsa
+
   tasks:
-    - name: Configure hard drive mount
+    - name: Configure hard drive mount to share via Samba
       include_role:
         name: hard_drive_mount
+      vars:
+        source_volume: /dev/vdb
+        mount_point: /mnt/ocean
 
     - name: Install and configure Docker
       include_role:
         name: docker
 
-    - name: Copy private key to remote host
+    - name: Copy ssh private key to remote host to download git repo
       copy:
-        src: ~/.ssh/id_rsa
-        dest: ~/.ssh/id_rsa
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
         mode: "0600" #otherwise ssh key will not work
 
-    - name: Get samba-server repo
+    - name: Get samba-server repo via SSH
       git:
-        repo: git@github.com:AntonioBriPerez/samba-server.git
-        dest: ~/git_repos/samba-server
-        key_file: ~/.ssh/id_rsa
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
+        key_file: "{{ ssh_priv_key }}"
         accept_hostkey: true
 
-    - name: Generate .env file
+    - name: Generate .env file for samba configuration
       copy:
-        dest: ~/git_repos/samba-server/.env
+        dest: "{{repo_route + '.env'}}"
         content: |
           ROOT=/mnt/ocean/antonio_hdd_3tb
 
-    - name: "Install pip packages"
+    - name: "Install pip packages for deploying container"
       pip:
         name:
           - docker
           - PyYAML
         state: present
 
-    - name: Start the container
+    - name: Start the container of samba service
       docker_compose:
         project_name: samba-server
-        project_src: ~/git_repos/samba-server/
+        project_src: "{{ repo_route }}"
         files: docker-compose.yml
         state: present
 
-    - name: Remove file
+    - name: Remove SSH private key file
       file:
-        path: ~/.ssh/id_rsa #preventing stealing ssh key so we remove it
+        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
         state: absent

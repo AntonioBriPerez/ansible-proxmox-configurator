@@ -2,9 +2,11 @@
   hosts: proxmox
   gather_facts: false
   become: true
+  vars:
+    vm_id: 101
   tasks:
     - name: Add disk to the machine
-      shell: /sbin/qm set 101 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+      shell: /sbin/qm set "{{ vm_id }}" -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
       register: shell_output
     - name: Display added HDD to VM in proxmox server
       debug:
@@ -14,10 +16,17 @@
   hosts: plex_server
   become: true
   gather_facts: false
+  vars:
+    repo_url: https://github.com/AntonioBriPerez/plex-server
+    repo_route: ~/git_repos/plex-server/
+
   tasks:
     - name: Configure hard drive mount
       include_role:
         name: hard_drive_mount
+      vars:
+        source_volume: /dev/vdb
+        mount_point: /mnt/ocean
 
     - name: Install and configure Docker
       include_role:
@@ -25,12 +34,12 @@
 
     - name: Get plex-server repo
       git:
-        repo: https://github.com/AntonioBriPerez/plex-server
-        dest: ~/git_repos/plex-server
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
 
     - name: Generate .env file
       copy:
-        dest: ~/git_repos/plex-server/.env
+        dest: "{{repo_route + '.env'}}"
         content: |
           MEDIA=/mnt/ocean/antonio_hdd_3tb/PlexServer
           STORAGE=/mnt/ocean/antonio_hdd_3tb/PlexServer/Downloads/torrents
@@ -46,6 +55,6 @@
     - name: Start the container
       docker_compose:
         project_name: plex-server
-        project_src: ~/git_repos/plex-server/
+        project_src: "{{ repo_route }}"
         files: docker-compose.yml
         state: present

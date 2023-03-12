@@ -8,19 +8,19 @@
 
 - name: Configure folder mnt
   file:
-    path: /mnt/ocean
+    path: "{{ mount_point }}"
     mode: "0755"
     state: directory
 
 - name: Check if mount point exists
   stat:
-    path: /mnt/ocean
+    path: "{{ mount_point }}"
   register: mount_point_stat
 
 - name: Mount the volume if not already mounted
   mount:
-    name: /mnt/ocean
-    src: /dev/vdb
+    name: "{{ mount_point }}"
+    src: "{{ source_volume }}"
     fstype: ntfs
     state: mounted
     opts: defaults

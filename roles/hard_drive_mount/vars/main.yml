@@ -1,0 +1,2 @@
+mount_point: /mnt/ocean
+source_volume: /dev/vdb

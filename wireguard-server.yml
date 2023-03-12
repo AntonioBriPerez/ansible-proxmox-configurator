@@ -1,65 +1,19 @@
 - name: Install and deploy wireguard server on machine
   hosts: wireguard_server
   become: true
+  vars:
+    repo_url: https://github.com/AntonioBriPerez/wireguard-vpn
+    repo_route: ~/git_repos/wireguard-server/
 
   tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-
-    - name: "Install prerequesites"
-      apt:
-        name:
-          - ca-certificates
-          - curl
-          - gnupg
-          - lsb-release
-          - pip
-        state: present
-
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add Docker repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-        state: present
-
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-
-    - name: "Install Docker packages"
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-          - docker-compose
-        state: present
-
-    - name: "Create group Docker"
-      group:
+    - name: Install and configure Docker
+      include_role:
         name: docker
-
-    - name: Add user anton to group mygroup
-      user:
-        name: anton
-        groups: docker
-
-    - name: Restart Docker
-      systemd:
-        name: docker
-        state: restarted
 
     - name: Get wireguard-server repo
       git:
-        repo: https://github.com/AntonioBriPerez/wireguard-vpn
-        dest: ~/git_repos/wireguard-server
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
 
     - name: "Install pip packages"
       pip:
@@ -71,6 +25,6 @@
     - name: Start the container
       docker_compose:
         project_name: wireguard-server
-        project_src: ~/git_repos/wireguard-server/
+        project_src: "{{ repo_route }}"
         files: docker-compose.yml
         state: present
