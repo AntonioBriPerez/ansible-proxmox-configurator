@@ -1,0 +1,130 @@
+- name: Prepare proxmox host
+  hosts: proxmox
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Add disk to the machine
+      shell: /sbin/qm set 102 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+      register: shell_output
+    - name: Display added HDD to VM in proxmox server
+      debug:
+        var: shell_output.stdout_lines
+
+- name: Install and deploy samba server on machine
+  hosts: samba_server
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install ntfs-3g
+      apt:
+        name: ntfs-3g
+
+    - name: Configure folder mnt
+      file:
+        path: /mnt/ocean
+        mode: "0755"
+        state: directory
+
+    - name: Check if mount point exists
+      stat:
+        path: /mnt/ocean
+      register: mount_point_stat
+
+    - name: Mount the volume if not already mounted
+      mount:
+        name: /mnt/ocean
+        src: /dev/vdb
+        fstype: ntfs
+        state: mounted
+        opts: defaults
+
+    - name: "Install prerequesites"
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - pip
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: "Install Docker packages"
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - docker-compose
+        state: present
+
+    - name: "Create group Docker"
+      group:
+        name: docker
+
+    - name: Add user anton to group mygroup
+      user:
+        name: anton
+        groups: docker
+
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
+
+    - name: Copy private key to remote host
+      copy:
+        src: ~/.ssh/id_rsa
+        dest: ~/.ssh/id_rsa
+        mode: "0600" #otherwise ssh key will not work
+
+    - name: Get samba-server repo
+      git:
+        repo: git@github.com:AntonioBriPerez/samba-server.git
+        dest: ~/git_repos/samba-server
+        key_file: ~/.ssh/id_rsa
+        accept_hostkey: true
+
+    - name: Generate .env file
+      copy:
+        dest: ~/git_repos/samba-server/.env
+        content: |
+          ROOT=/mnt/ocean/antonio_hdd_3tb
+
+    - name: "Install pip packages"
+      pip:
+        name:
+          - docker
+          - PyYAML
+        state: present
+
+    - name: Start the container
+      docker_compose:
+        project_name: samba-server
+        project_src: ~/git_repos/samba-server/
+        files: docker-compose.yml
+        state: present
+
+    - name: Remove file
+      file:
+        path: ~/.ssh/id_rsa #preventing stealing ssh key so we remove it
+        state: absent
