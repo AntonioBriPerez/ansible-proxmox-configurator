@@ -1,38 +1,33 @@
-
 - name: Prepare proxmox host
   hosts: proxmox
+  gather_facts: false
   become: true
-  tasks: 
-  
-  - name: Add disk to the machine
-    shell: /sbin/qm set 100 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
-    register: shell_output
-  - name: Display added HDD to VM in proxmox server
-    debug: 
-      var: shell_output.stdout_lines
-
-
+  tasks:
+    - name: Add disk to the machine
+      shell: /sbin/qm set 100 -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+      register: shell_output
+    - name: Display added HDD to VM in proxmox server
+      debug:
+        var: shell_output.stdout_lines
 
 - name: Install and deploy plex server on machine
   hosts: plex_server
   become: true
-
-
+  gather_facts: false
   tasks:
     - name: Update apt cache
       apt:
         update_cache: yes
-        
+
     - name: Install ntfs-3g
-      apt: 
+      apt:
         name: ntfs-3g
 
     - name: Configure folder mnt
-      file: 
+      file:
         path: /mnt/ocean
-        mode: '0755'
+        mode: "0755"
         state: directory
-
 
     - name: Check if mount point exists
       stat:
@@ -42,39 +37,38 @@
     - name: Mount the volume if not already mounted
       mount:
         name: /mnt/ocean
-        src: /dev/vda
+        src: /dev/vdb
         fstype: ntfs
         state: mounted
         opts: defaults
-      
-    
+
     - name: "Install prerequesites"
-      apt: 
-        name: 
+      apt:
+        name:
           - ca-certificates
           - curl
           - gnupg
           - lsb-release
           - pip
         state: present
-    
+
     - name: Add Docker GPG key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
-    
+
     - name: Add Docker repository
       apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_lsb.codename }} stable
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
         state: present
-    
+
     - name: Update apt cache
       apt:
         update_cache: yes
-    
+
     - name: "Install Docker packages"
-      apt: 
-        name: 
+      apt:
+        name:
           - docker-ce
           - docker-ce-cli
           - containerd.io
@@ -82,45 +76,43 @@
           - docker-compose-plugin
           - docker-compose
         state: present
-    
+
     - name: "Create group Docker"
-      group: 
+      group:
         name: docker
-      
-    - name: Add user antonio to group mygroup
+
+    - name: Add user anton to group mygroup
       user:
-        name: antonio
+        name: anton
         groups: docker
 
     - name: Restart Docker
       systemd:
         name: docker
         state: restarted
-          
+
     - name: Get plex-server repo
-      git: 
+      git:
         repo: https://github.com/AntonioBriPerez/plex-server
         dest: ~/git_repos/plex-server
-        
-    
+
     - name: Generate .env file
-      copy: 
+      copy:
         dest: ~/git_repos/plex-server/.env
-        content: | 
-              MEDIA=/mnt/ocean/antonio_hdd_3tb/PlexServer
-              STORAGE=/mnt/ocean/antonio_hdd_3tb/PlexServer/Downloads/torrents
-              ROOT=/mnt/ocean/antonio_hdd_3tb/
+        content: |
+          MEDIA=/mnt/ocean/antonio_hdd_3tb/PlexServer
+          STORAGE=/mnt/ocean/antonio_hdd_3tb/PlexServer/Downloads/torrents
+          ROOT=/mnt/ocean/antonio_hdd_3tb/
 
     - name: "Install pip packages"
-      pip: 
-        name: 
+      pip:
+        name:
           - docker
           - PyYAML
         state: present
 
-
     - name: Start the container
-      docker_compose: 
+      docker_compose:
         project_name: plex-server
         project_src: ~/git_repos/plex-server/
         files: docker-compose.yml
