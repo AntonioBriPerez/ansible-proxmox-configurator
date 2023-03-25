@@ -6,10 +6,6 @@
     repo_route: ~/git_repos/wireguard-server/
 
   tasks:
-    - name: Install and configure Docker
-      include_role:
-        name: docker
-
     - name: Get wireguard-server repo
       git:
         repo: "{{ repo_url }}"

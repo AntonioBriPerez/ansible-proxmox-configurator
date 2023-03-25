@@ -28,10 +28,6 @@
         source_volume: /dev/vdb
         mount_point: /mnt/ocean
 
-    - name: Install and configure Docker
-      include_role:
-        name: docker
-
     - name: Copy ssh private key to remote host to download git repo
       copy:
         src: "{{ ssh_priv_key }}"

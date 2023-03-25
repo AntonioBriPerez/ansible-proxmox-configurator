@@ -27,10 +27,6 @@
         source_volume: /dev/vdb
         mount_point: /mnt/ocean
 
-    - name: Install and configure Docker
-      include_role:
-        name: docker
-
     - name: Get plex-server repo
       git:
         repo: "{{ repo_url }}"
