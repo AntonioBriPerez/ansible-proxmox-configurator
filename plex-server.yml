@@ -37,13 +37,6 @@
         version: main
         accept_hostkey: yes
 
-    - name: "Install pip packages"
-      pip:
-        name:
-          - docker
-          - PyYAML
-        state: present
-
     - name: Start the container
       docker_compose:
         project_name: plex-server

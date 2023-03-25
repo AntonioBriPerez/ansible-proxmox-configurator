@@ -1,0 +1,35 @@
+- name: Configure linux workstation server on machine
+  hosts: file_browser_servers
+  become: true
+  gather_facts: false
+
+  vars:
+    repo_url: git@github.com:AntonioBriPerez/filebrowser-service.git
+    repo_route: ~/git_repos/filebrowser-service/
+    ssh_priv_key: ~/.ssh/id_rsa
+
+  tasks:
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
+
+    - name: Get filebrowser repo via SSH
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
+
+    - name: Start the container of samba service
+      docker_compose:
+        project_name: filebrowser-service
+        project_src: "{{ repo_route }}"
+        files: docker-compose.yml
+        state: present
+
+    - name: Remove SSH private key file
+      file:
+        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+        state: absent

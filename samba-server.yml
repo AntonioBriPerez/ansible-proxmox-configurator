@@ -47,13 +47,6 @@
         content: |
           ROOT=/mnt/ocean/antonio_hdd_3tb
 
-    - name: "Install pip packages for deploying container"
-      pip:
-        name:
-          - docker
-          - PyYAML
-        state: present
-
     - name: Start the container of samba service
       docker_compose:
         project_name: samba-server

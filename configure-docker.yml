@@ -6,3 +6,10 @@
     - name: Install and configure Docker
       include_role:
         name: docker
+
+    - name: "Install pip packages for deploying container"
+      pip:
+        name:
+          - docker
+          - PyYAML
+        state: present
