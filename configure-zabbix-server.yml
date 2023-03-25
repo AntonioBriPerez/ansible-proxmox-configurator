@@ -1,0 +1,9 @@
+# configure-zabbix-server.yml
+---
+- name: Configure Zabbix server on target hosts
+  hosts: zabbix_server
+  become: true
+  tasks:
+    - name: Install and configure Zabbix Server
+      include_role:
+        name: zabbix_server

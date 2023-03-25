@@ -1,0 +1,5 @@
+# defaults/main.yml
+
+zabbix_server_ip: "192.168.18.42"
+zabbix_agent_version: "5.4"
+zabbix_agent_conf_file: "/etc/zabbix/zabbix_agentd.conf"

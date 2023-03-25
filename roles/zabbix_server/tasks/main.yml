@@ -1,0 +1,78 @@
+# tasks/main.yml
+
+- name: Install packages for Zabbix server
+  apt:
+    name:
+      - apache2
+      - php
+      - php-mysql
+      - php-ldap
+      - php-bcmath
+      - php-mbstring
+      - php-gd
+      - mariadb-server
+      - zabbix-server-mysql
+      - zabbix-frontend-php
+      - zabbix-apache-conf
+    state: present
+    update_cache: yes
+
+- name: Start and enable Apache web server
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Start and enable MariaDB database server
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Set database root password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    check_implicit_admin: yes
+
+- name: Create Zabbix database
+  mysql_db:
+    name: "{{ zabbix_server_db_name }}"
+    collation: utf8_bin
+    encoding: utf8
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create Zabbix database user
+  mysql_user:
+    name: "{{ zabbix_server_db_user }}"
+    password: "{{ zabbix_server_db_password }}"
+    priv: "{{ zabbix_server_db_name }}.*:ALL"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Configure Zabbix server
+  lineinfile:
+    path: /etc/zabbix/zabbix_server.conf
+    regexp: "^#{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  loop:
+    - { regexp: "DBName=", line: "DBName={{ zabbix_server_db_name }}" }
+    - { regexp: "DBUser=", line: "DBUser={{ zabbix_server_db_user }}" }
+    - {
+        regexp: "DBPassword=",
+        line: "DBPassword={{ zabbix_server_db_password }}",
+      }
+    - { regexp: "ListenPort=", line: "ListenPort=10051" }
+
+- name: Start and enable Zabbix server
+  service:
+    name: zabbix-server
+    state: started
+    enabled: yes

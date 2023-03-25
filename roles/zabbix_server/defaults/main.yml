@@ -1,0 +1,6 @@
+# defaults/main.yml
+
+zabbix_server_version: "5.4"
+zabbix_server_db_name: "zabbix"
+zabbix_server_db_user: "zabbix"
+zabbix_server_db_password: "password"

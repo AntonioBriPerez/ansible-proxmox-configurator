@@ -1,0 +1,9 @@
+# configure-zabbix-agent.yml
+---
+- name: Configure Zabbix agent on target hosts
+  hosts: zabbix_agents
+  become: true
+  tasks:
+    - name: Install and configure Zabbix Agent
+      include_role:
+        name: zabbix

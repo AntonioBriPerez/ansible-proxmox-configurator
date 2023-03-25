@@ -1,0 +1,27 @@
+# tasks/main.yml
+
+- name: Add Zabbix repository and install Zabbix agent
+  apt:
+    name: "{{ ['zabbix-agent'] }}"
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Add Zabbix repository and install Zabbix agent
+  yum:
+    name: "{{ ['zabbix-agent'] }}"
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Configure Zabbix agent
+  lineinfile:
+    path: "{{ zabbix_agent_conf_file }}"
+    line: "{{ item.line }}"
+    regexp: "^#?{{ item.regexp }}"
+    state: present
+  loop:
+    - { regexp: "Server=", line: "Server={{ zabbix_server_ip }}" }
+    - { regexp: "ServerActive=", line: "ServerActive={{ zabbix_server_ip }}" }
+    - { regexp: "Hostname=", line: "Hostname={{ ansible_hostname }}" }
+  notify: restart zabbix-agent service
