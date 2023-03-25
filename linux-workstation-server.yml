@@ -1,0 +1,8 @@
+- name: Configure linux workstation server on machine
+  hosts: linux_workstation_server
+  become: true
+
+  tasks:
+    - name: Install and configure Docker
+      include_role:
+        name: docker
