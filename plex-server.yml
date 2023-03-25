@@ -35,14 +35,11 @@
       git:
         repo: "{{ repo_url }}"
         dest: "{{ repo_route }}"
-
-    - name: Generate .env file
-      copy:
-        dest: "{{repo_route + '.env'}}"
-        content: |
-          MEDIA=/mnt/ocean/antonio_hdd_3tb/PlexServer
-          STORAGE=/mnt/ocean/antonio_hdd_3tb/PlexServer/Downloads/torrents
-          ROOT=/mnt/ocean/antonio_hdd_3tb/
+        clone: yes
+        update: yes
+        force: yes
+        version: main
+        accept_hostkey: yes
 
     - name: "Install pip packages"
       pip:
