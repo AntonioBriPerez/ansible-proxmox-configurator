@@ -9,8 +9,6 @@
     accept_hostkey: yes
 
 - name: Start the container
-  docker_compose:
-    project_name: zabbix-server
-    project_src: "~/git_repos/zabbix-server/"
-    files: docker-compose.yml
-    state: present
+  shell: |
+    cd ~/git_repos/zabbix-server/ 
+    docker compose up -d
