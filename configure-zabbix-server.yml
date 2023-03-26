@@ -3,6 +3,7 @@
 - name: Configure Zabbix server on target hosts
   hosts: zabbix_server
   become: true
+  gather_facts: false
   tasks:
     - name: Install and configure Zabbix Server
       include_role:
