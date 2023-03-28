@@ -1,18 +1,25 @@
 # tasks/main.yml
 
-- name: Add Zabbix repository and install Zabbix agent
-  apt:
-    name: "{{ ['zabbix-agent'] }}"
-    state: present
-    update_cache: yes
-  when: ansible_os_family == "Debian"
+- name: Download Zabbix repository release package
+  get_url:
+    url: "https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1%2Bubuntu20.04_all.deb"
+    dest: "/tmp/zabbix-release_6.4-1+ubuntu20.04_all.deb"
 
-- name: Add Zabbix repository and install Zabbix agent
-  yum:
-    name: "{{ ['zabbix-agent'] }}"
-    state: present
+- name: Install Zabbix repository release package
+  become: true
+  apt:
+    deb: "/tmp/zabbix-release_6.4-1+ubuntu20.04_all.deb"
+
+- name: Update apt cache
+  become: true
+  apt:
     update_cache: yes
-  when: ansible_os_family == "RedHat"
+
+- name: Install Zabbix Agent 2
+  become: true
+  apt:
+    name: zabbix-agent2
+    state: present
 
 - name: Configure Zabbix agent
   lineinfile:

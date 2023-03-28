@@ -1,0 +1,16 @@
+---
+- name: Remove packages
+  hosts: zabbix_agents
+  become: yes
+
+  tasks:
+    - name: Remove package using yum
+      apt:
+        name: zabbix-agent
+        state: absent
+
+    - name: Stop zabbix-agent service
+      systemd:
+        name: zabbix-agent
+        state: stopped
+        enabled: no
