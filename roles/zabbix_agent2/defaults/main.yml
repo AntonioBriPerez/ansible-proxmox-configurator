@@ -3,3 +3,5 @@
 zabbix_server_ip: "192.168.18.42"
 zabbix_agent_version: "5.4"
 zabbix_agent_conf_file: "/etc/zabbix/zabbix_agent2.conf"
+location_altitude: "38.252553"
+location_latitude: "-0.617325"
