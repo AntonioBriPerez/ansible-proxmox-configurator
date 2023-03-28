@@ -1,6 +1,1 @@
-# handlers/main.yml
-
-- name: restart zabbix-agent2 service
-  service:
-    name: zabbix-agent2
-    state: restarted
+---
