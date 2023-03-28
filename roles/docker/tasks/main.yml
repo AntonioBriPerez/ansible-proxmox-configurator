@@ -38,10 +38,15 @@
   group:
     name: docker
 
-- name: Add user anton to group mygroup
+- name: Add users to docker group
+  become: true
   user:
-    name: anton
+    name: "{{ item }}"
     groups: docker
+    append: yes
+  loop:
+    - anton
+    - zabbix
 
 - name: Start Docker service
   service:

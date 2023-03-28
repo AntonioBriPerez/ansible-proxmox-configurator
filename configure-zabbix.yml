@@ -6,4 +6,4 @@
   tasks:
     - name: Install and configure Zabbix Agent
       include_role:
-        name: zabbix
+        name: zabbix_agent2
