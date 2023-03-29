@@ -1,0 +1,10 @@
+# configure-zabbix-server.yml
+---
+- name: Configure Gitlab server on target hosts
+  hosts: gitlab_server
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install and configure Gitlab Server
+      include_role:
+        name: gitlab_server
