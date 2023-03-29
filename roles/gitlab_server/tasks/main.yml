@@ -1,6 +1,6 @@
 - name: Get gitlab-server repo
   git:
-    repo: "https://github.com/AntonioBriPerez/gitlab-serveir.git"
+    repo: "https://github.com/AntonioBriPerez/gitlab-server.git"
     dest: "~/git_repos/gitlab-server/"
     clone: yes
     update: yes
@@ -13,7 +13,7 @@
     cd ~/git_repos/gitlab-server/ 
     docker compose up -d
 
-- name: Start the container of samba service
+- name: Start the container of gitlab service
   docker_compose:
     project_name: gitlab-server
     project_src: "~/git_repos/gitlab-server/"
