@@ -1,4 +1,4 @@
-- name: Configure linux workstation server on machine
+- name: Configure filebrowser on machines
   hosts: file_browser_servers
   become: true
   gather_facts: false
