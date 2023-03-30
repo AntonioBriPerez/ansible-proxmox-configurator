@@ -1,4 +1,4 @@
-- name: Configure linux workstation server on machine
+- name: Configure docker package on machine
   hosts: docker_servers
   become: true
   gather_facts: false
