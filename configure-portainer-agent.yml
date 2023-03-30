@@ -1,0 +1,21 @@
+- name: Install Portainer agent
+  hosts: docker_servers
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Get portainer-agent repo
+      git:
+        repo: "https://github.com/AntonioBriPerez/portainer-agent.git"
+        dest: "~/git_repos/portainer-agent/"
+        clone: yes
+        update: yes
+        force: yes
+        version: main
+        accept_hostkey: yes
+
+    - name: Start the container of portainer agent
+      docker_compose:
+        project_name: portainer-agent
+        project_src: "~/git_repos/portainer-agent/"
+        files: docker-compose.yml
+        state: present

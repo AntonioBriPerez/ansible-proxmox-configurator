@@ -5,4 +5,4 @@
   tasks:
     - name: Install and configure Portainer
       include_role:
-        name: docker
+        name: portainer
