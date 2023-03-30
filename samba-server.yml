@@ -1,4 +1,4 @@
-- name: Prepare proxmox host
+- name: Deploy samba service
   hosts: proxmox
   gather_facts: false
   become: true
