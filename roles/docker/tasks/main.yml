@@ -48,29 +48,22 @@
     - anton
     - zabbix
 
-- name: Check if Docker daemon configuration file exists
-  stat:
-    path: /etc/docker/daemon.json
-  register: daemon_json_file
-
-- name: Create the file, if it doesnt exist already
+- name: Remove file if it exists
   file:
     path: /etc/docker/daemon.json
-    state: touch
-  when: not daemon_json_file.stat.exists
+    state: absent
 
-- name: Docker-daemon-config
-  copy:
-    dest: /etc/docker/daemon.json
-    content: |
-      {
-        "api-enable-cors": true,
-        "hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]
-      }
-    force: yes
+- name: Modify ExecStart line in Docker service file
+  replace:
+    path: /lib/systemd/system/docker.service
+    regexp: "ExecStart=/usr/bin/dockerd.*"
+    replace: "ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:2375"
 
-- name: Start Docker service
-  service:
-    name: docker
-    state: started
-    enabled: yes
+- name: Reload systemd configuration
+  systemd:
+    daemon_reload: yes
+
+- name: Restart Docker service
+  systemd:
+    name: docker.service
+    state: restarted
