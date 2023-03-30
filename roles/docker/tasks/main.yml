@@ -59,15 +59,15 @@
     state: touch
   when: not daemon_json_file.stat.exists
 
-- name: Add Docker daemon configuration
-  blockinfile:
-    path: /etc/docker/daemon.json
-    block: |
+- name: Docker-daemon-config
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
       {
         "api-enable-cors": true,
         "hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]
       }
-    when: not daemon_json_file.stat.exists
+    force: yes
 
 - name: Start Docker service
   service:
