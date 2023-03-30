@@ -1,0 +1,8 @@
+- name: Configure portainer-service
+  hosts: wireguard_server
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install and configure Portainer
+      include_role:
+        name: docker

@@ -48,6 +48,27 @@
     - anton
     - zabbix
 
+- name: Check if Docker daemon configuration file exists
+  stat:
+    path: /etc/docker/daemon.json
+  register: daemon_json_file
+
+- name: Create the file, if it doesnt exist already
+  file:
+    path: /etc/docker/daemon.json
+    state: touch
+  when: not daemon_json_file.stat.exists
+
+- name: Add Docker daemon configuration
+  blockinfile:
+    path: /etc/docker/daemon.json
+    block: |
+      {
+        "api-enable-cors": true,
+        "hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]
+      }
+    when: not daemon_json_file.stat.exists
+
 - name: Start Docker service
   service:
     name: docker

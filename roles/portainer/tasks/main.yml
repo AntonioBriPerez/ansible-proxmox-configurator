@@ -1,0 +1,16 @@
+- name: Get portainer-service repo
+  git:
+    repo: "https://github.com/AntonioBriPerez/portainer-service.git"
+    dest: "~/git_repos/portainer-service/"
+    clone: yes
+    update: yes
+    force: yes
+    version: main
+    accept_hostkey: yes
+
+- name: Start the container of portainer service
+  docker_compose:
+    project_name: portainer-service
+    project_src: "~/git_repos/portainer-service/"
+    files: docker-compose.yml
+    state: present
