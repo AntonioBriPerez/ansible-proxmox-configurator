@@ -8,11 +8,6 @@
     version: main
     accept_hostkey: yes
 
-- name: Start the container
-  shell: |
-    cd ~/git_repos/gitlab-server/ 
-    docker compose up -d
-
 - name: Start the container of gitlab service
   docker_compose:
     project_name: gitlab-server
