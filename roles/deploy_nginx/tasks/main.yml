@@ -1,0 +1,35 @@
+- name: Create directory
+  file:
+    path: "{{ dest_dir_nginx_conf }}"
+    state: directory
+
+- name: Create certs directory
+  file:
+    path: "{{ dest_dir_certs }}"
+    state: directory
+
+- name: Copy Nginx configuration file to Docker host
+  become: true
+  copy:
+    src: nginx.conf
+    dest: "{{ dest_dir_nginx_conf }}"
+    force: yes
+
+- name: Copy certs to Docker host
+  copy:
+    src: /cygdrive/c/Users/anton/.certs/
+    dest: "{{ dest_dir_certs }}"
+    directory_mode: yes
+
+- name: Start Nginx container
+  become: true
+  docker_container:
+    name: "{{ nginx_container_name }}"
+    image: nginx
+    ports:
+      - "{{ nginx_http_port }}:80"
+      - "{{ nginx_https_port }}:443"
+    volumes:
+      - "{{ dest_dir_certs }}:/etc/nginx/certs"
+      - "{{ dest_dir_nginx_conf }}nginx.conf:/etc/nginx/nginx.conf"
+    restart_policy: always

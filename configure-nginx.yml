@@ -1,0 +1,9 @@
+---
+- name: Configure Nginx on target hosts
+  hosts: plex_server
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install and configure Nginx
+      include_role:
+        name: deploy_nginx
