@@ -2,5 +2,6 @@
 nginx_container_name: nginx
 nginx_http_port: 80
 nginx_https_port: 443
-dest_dir_certs: /tmp/certs/
+dest_dir_subdomain_certs: /tmp/subdomain/certs/
 dest_dir_nginx_conf: /tmp/nginx/
+dest_dir_main_certs: /tmp/main/certs

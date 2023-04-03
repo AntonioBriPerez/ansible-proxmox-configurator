@@ -3,9 +3,14 @@
     path: "{{ dest_dir_nginx_conf }}"
     state: directory
 
-- name: Create certs directory
+- name: Create subdomain certs directory
   file:
-    path: "{{ dest_dir_certs }}"
+    path: "{{ dest_dir_subdomain_certs }}"
+    state: directory
+
+- name: Create main certs directory
+  file:
+    path: "{{ dest_dir_main_certs }}"
     state: directory
 
 - name: Copy Nginx configuration file to Docker host
@@ -15,10 +20,16 @@
     dest: "{{ dest_dir_nginx_conf }}"
     force: yes
 
-- name: Copy certs to Docker host
+- name: Copy subdomain certs to Docker host
   copy:
     src: /cygdrive/c/Users/anton/.certs/all-shurdeploys.com/
-    dest: "{{ dest_dir_certs }}"
+    dest: "{{ dest_dir_subdomain_certs }}"
+    directory_mode: yes
+
+- name: Copy subdomain certs to Docker host
+  copy:
+    src: /cygdrive/c/Users/anton/.certs/shurdeploys.com/
+    dest: "{{ dest_dir_main_certs }}"
     directory_mode: yes
 
 - name: Start Nginx container
@@ -30,7 +41,8 @@
       - "{{ nginx_http_port }}:80"
       - "{{ nginx_https_port }}:443"
     volumes:
-      - "{{ dest_dir_certs }}:/etc/nginx/certs"
+      - "{{ dest_dir_subdomain_certs }}:/etc/nginx/subdomain/certs"
+      - "{{ dest_dir_main_certs }}:/etc/nginx/main/certs"
       - "{{ dest_dir_nginx_conf }}nginx.conf:/etc/nginx/nginx.conf"
     restart_policy: always
     restart: true
