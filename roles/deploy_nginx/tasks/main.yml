@@ -33,3 +33,4 @@
       - "{{ dest_dir_certs }}:/etc/nginx/certs"
       - "{{ dest_dir_nginx_conf }}nginx.conf:/etc/nginx/nginx.conf"
     restart_policy: always
+    restart: true
