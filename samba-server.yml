@@ -27,14 +27,14 @@
         dest: "{{ ssh_priv_key }}"
         mode: "0600" #otherwise ssh key will not work
 
-    - name: Get wireguard repo via SSH
+    - name: Get samba repo via SSH
       git:
         repo: "{{ repo_url }}"
         dest: "{{ repo_route }}"
         key_file: "{{ ssh_priv_key }}"
         accept_hostkey: true
 
-    - name: Start the container of wireguard
+    - name: Start the container of samba
       docker_compose:
         project_name: samba-server
         project_src: "~/git_repos/services/docker/samba-server/"
