@@ -1,16 +1,22 @@
-- name: Get gitlab-server repo
+- name: Copy ssh private key to remote host to download git repo
+  copy:
+    src: "{{ ssh_priv_key }}"
+    dest: "{{ ssh_priv_key }}"
+    mode: "0600" #otherwise ssh key will not work
+
+- name: Get services repo
   git:
-    repo: "https://github.com/AntonioBriPerez/gitlab-server.git"
-    dest: "~/git_repos/gitlab-server/"
+    repo: "{{ repo_url }}"
+    dest: "~/git_repos/services/"
     clone: yes
     update: yes
     force: yes
-    version: main
-    accept_hostkey: yes
+    key_file: "{{ ssh_priv_key }}"
+    accept_hostkey: true
 
-- name: Start the container of gitlab service
+- name: Start the container of Gitlab service
   docker_compose:
     project_name: gitlab-server
-    project_src: "~/git_repos/gitlab-server/"
+    project_src: "~/git_repos/services/docker/gitlab-server/"
     files: docker-compose.yml
     state: present
