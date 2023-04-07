@@ -16,41 +16,28 @@
   become: true
   gather_facts: false
   vars:
-    repo_url: git@github.com:AntonioBriPerez/samba-server.git
-    repo_route: ~/git_repos/samba-server/
+    repo_url: git@github.com:AntonioBriPerez/services.git
+    repo_route: ~/git_repos/services/
     ssh_priv_key: ~/.ssh/id_rsa
 
   tasks:
-    - name: Configure hard drive mount to share via Samba
-      include_role:
-        name: hard_drive_mount
-      vars:
-        source_volume: /dev/vdb
-        mount_point: /mnt/ocean
-
     - name: Copy ssh private key to remote host to download git repo
       copy:
         src: "{{ ssh_priv_key }}"
         dest: "{{ ssh_priv_key }}"
         mode: "0600" #otherwise ssh key will not work
 
-    - name: Get samba-server repo via SSH
+    - name: Get wireguard repo via SSH
       git:
         repo: "{{ repo_url }}"
         dest: "{{ repo_route }}"
         key_file: "{{ ssh_priv_key }}"
         accept_hostkey: true
 
-    - name: Generate .env file for samba configuration
-      copy:
-        dest: "{{repo_route + '.env'}}"
-        content: |
-          ROOT=/mnt/ocean/antonio_hdd_3tb
-
-    - name: Start the container of samba service
+    - name: Start the container of wireguard
       docker_compose:
         project_name: samba-server
-        project_src: "{{ repo_route }}"
+        project_src: "~/git_repos/services/docker/samba-server/"
         files: docker-compose.yml
         state: present
 
