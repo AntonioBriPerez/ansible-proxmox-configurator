@@ -1,19 +1,35 @@
-- name: Install and deploy wireguard server on machine
+- name: Configure wireguard on machines
   hosts: wireguard_server
   become: true
+  gather_facts: false
+
   vars:
-    repo_url: https://github.com/AntonioBriPerez/wireguard-vpn
-    repo_route: ~/git_repos/wireguard-server/
+    repo_url: git@github.com:AntonioBriPerez/services.git
+    repo_route: ~/git_repos/services/
+    ssh_priv_key: ~/.ssh/id_rsa
 
   tasks:
-    - name: Get wireguard-server repo
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
+
+    - name: Get wireguard repo via SSH
       git:
         repo: "{{ repo_url }}"
         dest: "{{ repo_route }}"
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
 
-    - name: Start the container
+    - name: Start the container of wireguard
       docker_compose:
-        project_name: wireguard-server
-        project_src: "{{ repo_route }}"
+        project_name: wireguard-von
+        project_src: "~/git_repos/services/docker/wireguard-vpn/"
         files: docker-compose.yml
         state: present
+
+    - name: Remove SSH private key file
+      file:
+        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+        state: absent
