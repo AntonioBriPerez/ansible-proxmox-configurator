@@ -1,18 +1,3 @@
-# - name: Get zabbix-server repo
-#   git:
-#     repo: "https://github.com/AntonioBriPerez/zabbix-server.git"
-#     dest: "~/git_repos/zabbix-server/"
-#     clone: yes
-#     update: yes
-#     force: yes
-#     version: main
-#     accept_hostkey: yes
-
-# - name: Start the container
-#   shell: |
-#     cd ~/git_repos/zabbix-server/
-#     docker compose up -d
-
 - name: Copy ssh private key to remote host to download git repo
   copy:
     src: "{{ ssh_priv_key }}"
