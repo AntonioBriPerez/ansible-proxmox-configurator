@@ -2,20 +2,32 @@
   hosts: docker_servers
   gather_facts: false
   become: true
+  vars:
+    repo_url: git@github.com:AntonioBriPerez/services.git
+    repo_route: ~/git_repos/services/
+    ssh_priv_key: ~/.ssh/id_rsa
+
   tasks:
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
+
     - name: Get portainer-agent repo
       git:
-        repo: "https://github.com/AntonioBriPerez/portainer-agent.git"
-        dest: "~/git_repos/portainer-agent/"
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
         clone: yes
         update: yes
         force: yes
         version: main
-        accept_hostkey: yes
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
 
     - name: Start the container of portainer agent
       docker_compose:
         project_name: portainer-agent
-        project_src: "~/git_repos/portainer-agent/"
+        project_src: "~/git_repos/services/docker/portainer-agent/"
         files: docker-compose.yml
         state: present
