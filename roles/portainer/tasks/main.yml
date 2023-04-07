@@ -4,7 +4,7 @@
     dest: "{{ ssh_priv_key }}"
     mode: "0600" #otherwise ssh key will not work
 
-- name: Get portainer-service repo
+- name: Get services repo
   git:
     repo: "{{ repo_url }}"
     dest: "~/git_repos/services/"
