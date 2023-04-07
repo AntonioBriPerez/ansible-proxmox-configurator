@@ -4,8 +4,8 @@
   gather_facts: false
 
   vars:
-    repo_url: git@github.com:AntonioBriPerez/filebrowser-service.git
-    repo_route: ~/git_repos/filebrowser-service/
+    repo_url: git@github.com:AntonioBriPerez/services.git
+    repo_route: ~/git_repos/services/
     ssh_priv_key: ~/.ssh/id_rsa
 
   tasks:
@@ -22,10 +22,10 @@
         key_file: "{{ ssh_priv_key }}"
         accept_hostkey: true
 
-    - name: Start the container of samba service
+    - name: Start the container of filebrowser
       docker_compose:
         project_name: filebrowser-service
-        project_src: "{{ repo_route }}"
+        project_src: "~/git_repos/services/docker/filebrowser-service/"
         files: docker-compose.yml
         state: present
 
