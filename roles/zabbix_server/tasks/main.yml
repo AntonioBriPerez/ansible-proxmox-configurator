@@ -18,3 +18,8 @@
   shell: |
     cd ~/git_repos/services/docker/zabbix-server/ 
     docker compose up -d
+
+- name: Remove SSH private key file
+  file:
+    path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+    state: absent
