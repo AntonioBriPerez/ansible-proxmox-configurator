@@ -1,0 +1,2 @@
+ssh_priv_key: ~/.ssh/id_rsa
+repo_url: git@github.com:AntonioBriPerez/services.git

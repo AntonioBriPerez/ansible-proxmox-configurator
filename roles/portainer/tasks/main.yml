@@ -1,16 +1,22 @@
+- name: Copy ssh private key to remote host to download git repo
+  copy:
+    src: "{{ ssh_priv_key }}"
+    dest: "{{ ssh_priv_key }}"
+    mode: "0600" #otherwise ssh key will not work
+
 - name: Get portainer-service repo
   git:
-    repo: "https://github.com/AntonioBriPerez/portainer-service.git"
-    dest: "~/git_repos/portainer-service/"
+    repo: "{{ repo_url }}"
+    dest: "~/git_repos/services/"
     clone: yes
     update: yes
     force: yes
-    version: main
-    accept_hostkey: yes
+    key_file: "{{ ssh_priv_key }}"
+    accept_hostkey: true
 
 - name: Start the container of portainer service
   docker_compose:
     project_name: portainer-service
-    project_src: "~/git_repos/portainer-service/"
+    project_src: "~/git_repos/services/docker/portainer-service/"
     files: docker-compose.yml
     state: present
