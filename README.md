@@ -1,5 +1,10 @@
 # Ansible configuration for Proxmox VM's
 
+To configure Akeyless token
+```bash
+      VAULT_TOKEN=$(akeyless auth --access-id "xxx" --access-type="access_key" --access-key "xxx" --json true | awk '/token/ { gsub(/[",]/,"",$2); print $2}' > ~/.vault-token)
+```
+
 ## Description
 This repository contains all the playbooks and roles necessary to deploy a Samba file sharing server, a Wireguard VPN server and Plex Server for streaming media. All these 3 services are hosted on independent VM's provisioned in proxmox via terraform all explained [in this repository](https://github.com/AntonioBriPerez/proxmox-terraform). 
 
