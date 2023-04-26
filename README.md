@@ -8,12 +8,28 @@ pip install hvac
 ```
 Once we have done that, we must create an API token as is shown in the next image:
 ![Alt text](./images/2023-04-26%2022_46_37-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png "Title")
+
+Once we have don that, we can proceed to install the binary
 ```bash
 curl -o akeyless https://akeyless-cli.s3.us-east-2.amazonaws.com/cli/latest/production/cli-linux-amd64
+```
+And execute it and config like this: 
+![Alt text](./images/2023-04-26%2022_45_51-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png)
 
+Then we authenticate:
+![Alt text](./images/2023-04-26%2022_46_06-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png)
+
+And we can  export now the variable as we have the necessary to do it:
+```bash
 VAULT_TOKEN=$(akeyless auth --access-id "xxx" --access-type="access_key" --access-key "xxx" --json true | awk '/token/ { gsub(/[",]/,"",$2); print $2}' > ~/.vault-token)
 ```
-Estos token los podremos ver si
+
+Now we should be able to create a token from the cli
+![Alt text](./images/2023-04-26%2022_47_55-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png)
+
+It is important that we have to associate our api key to the role we want:
+![Alt text](./images/2023-04-26%2022_47_06-.png)
+![Alt text](./images/2023-04-26%2022_46_52-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png)
 
 ## Description
 This repository contains all the playbooks and roles necessary to deploy a Samba file sharing server, a Wireguard VPN server and Plex Server for streaming media. All these 3 services are hosted on independent VM's provisioned in proxmox via terraform all explained [in this repository](https://github.com/AntonioBriPerez/proxmox-terraform). 
