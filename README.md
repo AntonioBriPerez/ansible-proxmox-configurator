@@ -16,6 +16,7 @@ curl -o akeyless https://akeyless-cli.s3.us-east-2.amazonaws.com/cli/latest/prod
 And execute it and config like this: 
 ![Alt text](./images/2023-04-26%2022_45_51-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png)
 
+
 Then we authenticate:
 ![Alt text](./images/2023-04-26%2022_46_06-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png)
 
