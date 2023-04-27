@@ -6,6 +6,10 @@ First of all we have to create an account in akeyless. Then install
 ```bash
 pip install hvac
 ```
+And export
+```bash
+export VAULT_ADDR=https://hvp.akeyless.io
+```
 Once we have done that, we must create an API token as is shown in the next image:
 ![Alt text](./images/2023-04-26%2022_46_37-README.md%20-%20ansible-proxmox-configurator%20%5BWSL_%20Ubuntu%5D%20-%20Visual%20Studio%20Code.png "Title")
 
