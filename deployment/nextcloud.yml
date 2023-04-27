@@ -8,27 +8,45 @@
     ssh_priv_key: ~/.ssh/id_rsa
 
   tasks:
-    - name: Copy ssh private key to remote host to download git repo
-      copy:
-        src: "{{ ssh_priv_key }}"
-        dest: "{{ ssh_priv_key }}"
-        mode: "0600" #otherwise ssh key will not work
+  - name: Fetching MySQL passwords
+    set_fact: 
+      mysql_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_password' ).values() | first }}" 
+      mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_root_password' ).values() | first }}" 
+  
+  - name: Create .env file with secrets
+    copy:
+      dest: /root/prueba.txt
+      content: |
+        mysql_password={{ mysql_password}}
+        mysql_root_password= {{ mysql_root_password}}
 
-    - name: Get nextcloud repo via SSH
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ repo_route }}"
-        key_file: "{{ ssh_priv_key }}"
-        accept_hostkey: true
 
-    - name: Start the container of nextcloud
-      docker_compose:
-        project_name: nextcloud-server
-        project_src: "~/git_repos/services/docker/nextcloud-server/"
-        files: docker-compose.yml
-        state: present
 
-    - name: Remove SSH private key file
-      file:
-        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
-        state: absent
+  # - name: Print registered output
+  #   debug:
+  #     msg: "{{ secret.values() }}"
+
+  #   - name: Copy ssh private key to remote host to download git repo
+  #     copy:
+  #       src: "{{ ssh_priv_key }}"
+  #       dest: "{{ ssh_priv_key }}"
+  #       mode: "0600" #otherwise ssh key will not work
+
+  #   - name: Get nextcloud repo via SSH
+  #     git:
+  #       repo: "{{ repo_url }}"
+  #       dest: "{{ repo_route }}"
+  #       key_file: "{{ ssh_priv_key }}"
+  #       accept_hostkey: true
+
+  #   - name: Start the container of nextcloud
+  #     docker_compose:
+  #       project_name: nextcloud-server
+  #       project_src: "~/git_repos/services/docker/nextcloud-server/"
+  #       files: docker-compose.yml
+  #       state: present
+
+  #   - name: Remove SSH private key file
+  #     file:
+  #       path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+  #       state: absent
