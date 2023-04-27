@@ -14,12 +14,7 @@
       mysql_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_password' ).values() | first }}" 
       mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_root_password' ).values() | first }}" 
   
-  - name: Create .env file with secrets
-    copy:
-      dest: "{{ service_route }}.env"
-      content: |
-        mysql_password={{ mysql_password}}
-        mysql_root_password= {{ mysql_root_password}}
+
 
   - name: Copy ssh private key to remote host to download git repo
     copy:
@@ -33,6 +28,13 @@
       dest: "{{ repo_route }}"
       key_file: "{{ ssh_priv_key }}"
       accept_hostkey: true
+  
+  - name: Create .env file with secrets
+    copy:
+      dest: "{{ service_route }}.env"
+      content: |
+        mysql_password={{ mysql_password}}
+        mysql_root_password= {{ mysql_root_password}}
 
   - name: Start the container of nextcloud
     docker_compose:
