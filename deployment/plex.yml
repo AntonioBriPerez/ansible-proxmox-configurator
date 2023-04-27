@@ -18,7 +18,7 @@
   vars:
     repo_url: git@github.com:AntonioBriPerez/services.git
     repo_route: ~/git_repos/services/
-    ssh_priv_key: ~/.ssh/id_rsa
+    ssh_priv_key: /home/anton/.ssh/id_rsa
 
   tasks:
     - name: Configure hard drive mount
@@ -28,6 +28,12 @@
         source_volume: /dev/vdb
         mount_point: /mnt/ocean
 
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
+        
     - name: Get plex-server repo
       git:
         repo: "{{ repo_url }}"
