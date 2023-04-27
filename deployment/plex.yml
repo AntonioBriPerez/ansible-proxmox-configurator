@@ -16,8 +16,9 @@
   become: true
   gather_facts: false
   vars:
-    repo_url: https://github.com/AntonioBriPerez/plex-server
-    repo_route: ~/git_repos/plex-server/
+    repo_url: git@github.com:AntonioBriPerez/services.git
+    repo_route: ~/git_repos/services/
+    ssh_priv_key: ~/.ssh/id_rsa
 
   tasks:
     - name: Configure hard drive mount
@@ -35,11 +36,12 @@
         update: yes
         force: yes
         version: main
-        accept_hostkey: yes
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
 
     - name: Start the container
       docker_compose:
         project_name: plex-server
-        project_src: "{{ repo_route }}"
+        project_src: "{{ repo_route }}docker/plex-server/"
         files: docker-compose.yml
         state: present
