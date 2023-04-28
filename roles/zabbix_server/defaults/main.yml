@@ -1,3 +1,5 @@
 ---
 ssh_priv_key: ~/.ssh/id_rsa
 repo_url: git@github.com:AntonioBriPerez/services.git
+repo_route: ~/git_repos/services/
+service_route: "{{ repo_route }}docker/zabbix-server/"

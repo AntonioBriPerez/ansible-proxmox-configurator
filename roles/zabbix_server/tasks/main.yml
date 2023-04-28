@@ -1,3 +1,8 @@
+- name: Fetching MySQL passwords
+  set_fact: 
+    mysql_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_password' ).values() | first }}" 
+    mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_root_password' ).values() | first }}" 
+  
 - name: Copy ssh private key to remote host to download git repo
   copy:
     src: "{{ ssh_priv_key }}"
@@ -7,12 +12,24 @@
 - name: Get services repo
   git:
     repo: "{{ repo_url }}"
-    dest: "~/git_repos/services/"
+    dest: "{{ repo_route }}"
     clone: yes
     update: yes
     force: yes
     key_file: "{{ ssh_priv_key }}"
     accept_hostkey: true
+
+- name: Create .env file with secrets
+  copy:
+    dest: "{{ service_route }}env_vars/.MYSQL_PASSWORD"
+    content: |
+      {{ mysql_password}}
+
+- name: Create .env file with secrets
+  copy:
+    dest: "{{ service_route }}env_vars/.MYSQL_ROOT_PASSWORD"
+    content: |
+      {{ mysql_password}}
 
 - name: Start the container
   shell: |
