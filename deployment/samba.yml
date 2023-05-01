@@ -21,44 +21,47 @@
     ssh_priv_key: ~/.ssh/id_rsa
     service_route: "{{ repo_route }}docker/samba-server/"
 
-
   tasks:
-  - name: Fetching Samba
-    set_fact: 
-      samba_password: "{{ lookup('hashi_vault', 'secret=secret/samba/samba_password' ).values() | first }}" 
-  
+    - name: Configure hard drive mount
+      include_role:
+        name: hard_drive_mount
+      vars:
+        source_volume: /dev/vdb
+        mount_point: /mnt/ocean
 
-        
-  - name: Copy ssh private key to remote host to download git repo
-    copy:
-      src: "{{ ssh_priv_key }}"
-      dest: "{{ ssh_priv_key }}"
-      mode: "0600" #otherwise ssh key will not work
+    - name: Fetching Samba
+      set_fact:
+        samba_password: "{{ lookup('hashi_vault', 'secret=secret/samba/samba_password' ).values() | first }}"
 
-  - name: Get samba repo via SSH
-    git:
-      repo: "{{ repo_url }}"
-      dest: "{{ repo_route }}"
-      key_file: "{{ ssh_priv_key }}"
-      accept_hostkey: true
-  
-  - name: Create .env file with secrets
-    copy:
-      dest: "{{ service_route }}pass.env"
-      content: |
-        samba_password={{ samba_password }}
-        ROOT=/mnt/ocean/antonio_hdd_3tb
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
 
+    - name: Get samba repo via SSH
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
 
-  - name: Start the container of samba
-    docker_compose:
-      project_name: samba-server
-      project_src: "{{ service_route }}"
-      files: docker-compose.yml
-      state: present
-      env_file: "{{ service_route }}pass.env"
+    - name: Create .env file with secrets
+      copy:
+        dest: "{{ service_route }}pass.env"
+        content: |
+          samba_password={{ samba_password }}
+          ROOT=/mnt/ocean/antonio_hdd_3tb
 
-  - name: Remove SSH private key file
-    file:
-      path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
-      state: absent
+    - name: Start the container of samba
+      docker_compose:
+        project_name: samba-server
+        project_src: "{{ service_route }}"
+        files: docker-compose.yml
+        state: present
+        env_file: "{{ service_route }}pass.env"
+
+    - name: Remove SSH private key file
+      file:
+        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+        state: absent

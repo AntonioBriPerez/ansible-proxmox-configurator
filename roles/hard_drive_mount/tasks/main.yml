@@ -2,10 +2,6 @@
   apt:
     update_cache: yes
 
-- name: Install ntfs-3g
-  apt:
-    name: ntfs-3g
-
 - name: Configure folder mnt
   file:
     path: "{{ mount_point }}"
@@ -21,6 +17,6 @@
   mount:
     name: "{{ mount_point }}"
     src: "{{ source_volume }}"
-    fstype: ntfs
+    fstype: ext3
     state: mounted
     opts: defaults
