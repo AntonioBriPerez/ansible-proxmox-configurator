@@ -1,5 +1,18 @@
+- name: Deploy samba service
+  hosts: proxmox
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Add disk to the machine
+      shell: /sbin/qm set "{{ hostvars['nextcloudserver']['vm_id'] }}" -virtio2 /dev/disk/by-id/ata-ST3000DM001-1CH166_Z1F4C8RS-part2
+      register: shell_output
+    - name: Display added HDD to VM in proxmox server
+      debug:
+        var: shell_output.stdout_lines
+
 - name: Install and deploy nextcloud server on machine
-  hosts: nextcloud_server
+  hosts: nextcloudserver
   become: true
   gather_facts: false
   vars:
@@ -9,42 +22,47 @@
     service_route: "{{ repo_route }}docker/nextcloud-server/"
 
   tasks:
-  - name: Fetching MySQL passwords
-    set_fact: 
-      mysql_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_password' ).values() | first }}" 
-      mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_root_password' ).values() | first }}" 
-  
+    - name: Configure hard drive mount
+      include_role:
+        name: hard_drive_mount
+      vars:
+        source_volume: /dev/vda
+        mount_point: /mnt/ocean
 
+    - name: Fetching MySQL passwords
+      set_fact:
+        mysql_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_password' ).values() | first }}"
+        mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/nextcloud/mysql_root_password' ).values() | first }}"
 
-  - name: Copy ssh private key to remote host to download git repo
-    copy:
-      src: "{{ ssh_priv_key }}"
-      dest: "{{ ssh_priv_key }}"
-      mode: "0600" #otherwise ssh key will not work
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
 
-  - name: Get nextcloud repo via SSH
-    git:
-      repo: "{{ repo_url }}"
-      dest: "{{ repo_route }}"
-      key_file: "{{ ssh_priv_key }}"
-      accept_hostkey: true
-  
-  - name: Create .env file with secrets
-    copy:
-      dest: "{{ service_route }}.env"
-      content: |
-        mysql_password={{ mysql_password}}
-        mysql_root_password= {{ mysql_root_password}}
+    - name: Get nextcloud repo via SSH
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
 
-  - name: Start the container of nextcloud
-    docker_compose:
-      project_name: nextcloud-server
-      project_src: "{{ service_route }}"
-      files: docker-compose.yml
-      state: present
-      env_file: "{{ service_route }}.env"
+    - name: Create .env file with secrets
+      copy:
+        dest: "{{ service_route }}.env"
+        content: |
+          mysql_password={{ mysql_password}}
+          mysql_root_password= {{ mysql_root_password}}
 
-  - name: Remove SSH private key file
-    file:
-      path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
-      state: absent
+    - name: Start the container of nextcloud
+      docker_compose:
+        project_name: nextcloud-server
+        project_src: "{{ service_route }}"
+        files: docker-compose.yml
+        state: present
+        env_file: "{{ service_route }}.env"
+
+    - name: Remove SSH private key file
+      file:
+        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+        state: absent
