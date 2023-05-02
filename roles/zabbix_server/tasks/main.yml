@@ -1,8 +1,8 @@
 - name: Fetching MySQL passwords
-  set_fact: 
-    mysql_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_password' ).values() | first }}" 
-    mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_root_password' ).values() | first }}" 
-  
+  set_fact:
+    mysql_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_password' ).values() | first }}"
+    mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_root_password' ).values() | first }}"
+
 - name: Copy ssh private key to remote host to download git repo
   copy:
     src: "{{ ssh_priv_key }}"
@@ -33,7 +33,7 @@
 
 - name: Start the container
   shell: |
-    cd ~/git_repos/services/docker/zabbix-server/ 
+    cd ~/git_repos/services/docker/zabbix-server/
     docker compose up -d
 
 - name: Remove SSH private key file

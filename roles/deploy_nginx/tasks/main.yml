@@ -18,19 +18,19 @@
   copy:
     src: nginx.conf
     dest: "{{ dest_dir_nginx_conf }}"
-    force: yes
+    force: true
 
 - name: Copy subdomain certs to Docker host
   copy:
     src: /cygdrive/c/Users/anton/.certs/all-shurdeploys.com/
     dest: "{{ dest_dir_subdomain_certs }}"
-    directory_mode: yes
+    directory_mode: true
 
 - name: Copy subdomain certs to Docker host
   copy:
     src: /cygdrive/c/Users/anton/.certs/shurdeploys.com/
     dest: "{{ dest_dir_main_certs }}"
-    directory_mode: yes
+    directory_mode: true
 
 - name: Start Nginx container
   become: true

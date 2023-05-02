@@ -12,15 +12,15 @@
       copy:
         src: "{{ ssh_priv_key }}"
         dest: "{{ ssh_priv_key }}"
-        mode: "0600" #otherwise ssh key will not work
+        mode: "0600" # otherwise ssh key will not work
 
     - name: Get portainer-agent repo
       git:
         repo: "{{ repo_url }}"
         dest: "{{ repo_route }}"
-        clone: yes
-        update: yes
-        force: yes
+        clone: true
+        update: true
+        force: true
         version: main
         key_file: "{{ ssh_priv_key }}"
         accept_hostkey: true
@@ -34,5 +34,5 @@
 
     - name: Remove SSH private key file
       file:
-        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+        path: "{{ ssh_priv_key }}" # preventing stealing ssh key so we remove it
         state: absent
