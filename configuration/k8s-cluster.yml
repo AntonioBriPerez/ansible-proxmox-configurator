@@ -1,0 +1,163 @@
+- name: Configure K8s cluster
+  hosts: kubernetes_nodes
+  gather_facts: false
+  become: true
+  vars:
+    pod_network: 192.168.10.0/16
+
+  tasks:
+    - name: Disable Swapp
+      shell: |
+        swapoff -a
+    - name: Setting to permissive SELINUX
+      shell: |
+        sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+    - name: Add k8s-m in /etc/hosts files
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+        state: present
+      loop:
+        - k8s-m.local 192.168.18.140
+        - k8s-n1.local 192.168.18.154
+        - k8s-n2.local 192.168.18.210
+
+    - name: "Install prerequesites"
+      dnf:
+        name:
+          - iproute-tc
+        state: present
+
+    - name: FirewallD rules
+      firewalld:
+        permanent: yes
+        immediate: yes
+        port: "{{ item }}"
+        state: enabled
+      with_items:
+        - 6443/tcp
+        - 10250/tcp
+        - 2380/tcp
+        - 2379/tcp
+        - 10250/tcp
+        - 10251/tcp
+        - 10252/tcp
+
+    - name: Add firewall rules for a range of ports with firewalld
+      shell: |
+        firewall-cmd --permanent --add-port=30000-32767/tcp
+        sudo firewall-cmd --reload
+
+    - name: Add modprobe lines
+      ansible.builtin.lineinfile:
+        path: /etc/modules-load.d/k8s.conf
+        line: "{{ item }}"
+        state: present
+      loop:
+        - overlay
+        - br_netfilter
+    - name: Refresh modprobe modules
+      command: |
+        modprobe overlay
+        modprobe br_netfilter
+
+    - name: Add Network lines
+      ansible.builtin.lineinfile:
+        path: /etc/sysctl.d/k8s.conf
+        line: "{{ item }}"
+        state: present
+      loop:
+        - net.bridge.bridge-nf-call-iptables  = 1
+        - net.ipv4.ip_forward                 = 1
+        - net.bridge.bridge-nf-call-ip6tables = 1
+    - name: Reload sysctl changes
+      command: |
+        sudo sysctl --system
+
+    - name: Download CRIO packages
+      command: |
+        curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+        curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.26.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:1.26/CentOS_8/devel:kubic:libcontainers:stable:cri-o:1.26.repo
+
+    - name: "Install crio"
+      dnf:
+        name:
+          - cri-o
+        state: present
+
+    - name: Make sure a CRIO is running
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        name: crio
+
+    - name: Create k8s repo file
+      copy:
+        dest: /etc/yum.repos.d/kubernetes.repo
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+          enabled=1
+          gpgcheck=1
+          repo_gpgcheck=1
+          gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+          exclude=kubelet kubeadm kubectl
+
+    - name: "Install kubernetes components"
+      dnf:
+        name:
+          - kubelet-1.26.1
+          - kubeadm-1.26.1
+          - kubectl-1.26.1
+        state: present
+        disable_excludes: kubernetes
+
+    - name: Init pod network on master node
+      become: true
+      command: |
+        kubeadm init --pod-network-cidr="{{ pod_network }}"
+      when: inventory_hostname in groups['kubernetes_masters']
+      register: worker_joiner
+      ignore_errors: true
+
+    - name: Display worker node join command
+      debug:
+        var: worker_joiner.stdout_lines
+      when: inventory_hostname in groups['kubernetes_masters']
+
+    - name: Create kubeconfig for user
+      become: true
+      command: |
+        mkdir -p /home/anton/.kube
+      when: inventory_hostname in groups['kubernetes_masters']
+
+    - name: Copy admin.conf to user folder
+      become: true
+      ansible.builtin.copy:
+        remote_src: true
+        src: /etc/kubernetes/admin.conf
+        dest: /home/anton/.kube/config
+        owner: anton
+        group: anton
+        mode: u=rwx,g=rwx,o=r
+      when: inventory_hostname in groups['kubernetes_masters']
+
+    - name: Apply calico POD networkk add-on
+      become: false
+      command: |
+        kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+      when: inventory_hostname in groups['kubernetes_masters']
+
+    - name: Check pods to verify k8s cluster
+      become: false
+      command: |
+        kubectl get pods --all-namespaces
+      register: pods_output
+      when: inventory_hostname in groups['kubernetes_masters']
+
+    - name: Display command output
+      debug:
+        var: pods_output.stdout_lines
+      when: inventory_hostname in groups['kubernetes_masters']
