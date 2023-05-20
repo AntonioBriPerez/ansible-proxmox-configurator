@@ -3,7 +3,7 @@
   gather_facts: false
   become: true
   vars:
-    pod_network: 192.168.10.0/16
+    pod_network: 192.168.192.0/18
 
   tasks:
     - name: Disable Swapp
@@ -43,11 +43,13 @@
         - 10250/tcp
         - 10251/tcp
         - 10252/tcp
+      ignore_errors: true
 
     - name: Add firewall rules for a range of ports with firewalld
       shell: |
         firewall-cmd --permanent --add-port=30000-32767/tcp
         sudo firewall-cmd --reload
+      ignore_errors: true
 
     - name: Add modprobe lines
       ansible.builtin.lineinfile:
