@@ -1,4 +1,4 @@
-- name: Install and deploy nextcloud server on machine
+- name: Install and deploy ts3 server on machine
   hosts: ts3server
   become: true
   gather_facts: false
@@ -38,7 +38,8 @@
         project_src: "{{ service_route }}"
         files: docker-compose.yml
         state: present
-        env_file: "{{ service_route }}.env"
+        env_file: 
+        - {{ service_route }}.env"
 
     - name: Remove SSH private key file
       file:
