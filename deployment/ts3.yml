@@ -1,0 +1,46 @@
+- name: Install and deploy nextcloud server on machine
+  hosts: ts3server
+  become: true
+  gather_facts: false
+  vars:
+    repo_url: git@github.com:AntonioBriPerez/services.git
+    repo_route: ~/git_repos/services/
+    ssh_priv_key: ~/.ssh/ec2ts3
+    service_route: "{{ repo_route }}docker/ts3/"
+
+  tasks:
+    - name: Fetching MariaDB passwords
+      set_fact:
+        mysql_password: "{{ lookup('hashi_vault', 'secret=secret/ts3-server/ts3_db_password' ).values() | first }}"
+
+    - name: Copy ssh private key to remote host to download git repo
+      copy:
+        src: "{{ ssh_priv_key }}"
+        dest: "{{ ssh_priv_key }}"
+        mode: "0600" #otherwise ssh key will not work
+
+    - name: Get ts3 repo via SSH
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_route }}"
+        key_file: "{{ ssh_priv_key }}"
+        accept_hostkey: true
+
+    - name: Create .env file with secrets
+      copy:
+        dest: "{{ service_route }}.env"
+        content: |
+          mysql_password={{ mysql_password}}
+
+    - name: Start the container of ts3
+      docker_compose:
+        project_name: ts3
+        project_src: "{{ service_route }}"
+        files: docker-compose.yml
+        state: present
+        env_file: "{{ service_route }}.env"
+
+    - name: Remove SSH private key file
+      file:
+        path: "{{ ssh_priv_key }}" #preventing stealing ssh key so we remove it
+        state: absent
