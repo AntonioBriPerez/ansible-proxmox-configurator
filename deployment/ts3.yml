@@ -39,7 +39,7 @@
         files: docker-compose.yml
         state: present
         env_file: 
-        - ${{ service_route }}.env
+        - /root/git_repos/services/docker/ts3/.env
 
     - name: Remove SSH private key file
       file:
