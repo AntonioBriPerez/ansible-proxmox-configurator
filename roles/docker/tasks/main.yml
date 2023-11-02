@@ -48,6 +48,12 @@
     - anton
     - zabbix
     - ubuntu
+    
+- name: Reload systemd manager configuration
+  systemd:
+    daemon_reload: yes
+    become: yes
+
 
 - name: Start Docker service
   service:
