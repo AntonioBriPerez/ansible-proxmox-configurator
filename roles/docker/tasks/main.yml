@@ -16,7 +16,7 @@
 
 - name: Add Docker repository
   apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
     state: present
 
 - name: Update apt cache
@@ -52,7 +52,6 @@
 - name: Reload systemd manager configuration
   systemd:
     daemon_reload: yes
-    become: yes
 
 
 - name: Start Docker service

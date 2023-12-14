@@ -1,5 +1,5 @@
 - name: Configure docker package on machine
-  hosts: ts3server
+  hosts: docker_servers
   become: true
   gather_facts: false
   tasks:
