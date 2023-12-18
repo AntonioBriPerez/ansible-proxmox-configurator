@@ -2,6 +2,9 @@
   set_fact:
     mysql_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_password' ).values() | first }}"
     mysql_root_password: "{{ lookup('hashi_vault', 'secret=secret/zabbix/mysql_root_password' ).values() | first }}"
+    mysql_user: "admin"
+    mysql_root_user: "root"
+    
 
 - name: Copy ssh private key to remote host to download git repo
   copy:
@@ -27,9 +30,27 @@
 
 - name: Create .env file with secrets
   copy:
-    dest: "{{ service_route }}env_vars/.MYSQL_ROOT_PASSWORD"
+    dest: "{{ service_route }}env_vars/.MYSQL_USER"
+    content: |
+      {{ mysql_user}}
+
+- name: Create .env file with user name
+  copy:
+    dest: "{{ service_route }}env_vars/.MYSQL_PASSWORD"
     content: |
       {{ mysql_password}}
+
+- name: Create .env file with root pass
+  copy:
+    dest: "{{ service_route }}env_vars/.MYSQL_ROOT_PASSWORD"
+    content: |
+      {{ mysql_root_password}}
+
+- name: Create .env file with root user
+  copy:
+    dest: "{{ service_route }}env_vars/.MYSQL_ROOT_USER"
+    content: |
+      {{ mysql_root_user}}
 
 - name: Start the container
   shell: |

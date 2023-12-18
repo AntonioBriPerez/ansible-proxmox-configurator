@@ -5,7 +5,7 @@
   vars:
     repo_url: git@github.com:AntonioBriPerez/services.git
     repo_route: ~/git_repos/services/
-    ssh_priv_key: ~/.ssh/ec2ts3
+    ssh_priv_key: ~/.ssh/id_rsa
     service_route: "{{ repo_route }}docker/ts3/"
 
   tasks:
