@@ -1,5 +1,5 @@
 - name: Configure wireguard on machines
-  hosts: vpnds
+  hosts: vpndns
   become: true
   gather_facts: false
 

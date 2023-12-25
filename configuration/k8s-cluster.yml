@@ -19,9 +19,9 @@
         line: "{{ item }}"
         state: present
       loop:
-        - k8s-m.local 192.168.18.140
-        - k8s-n1.local 192.168.18.154
-        - k8s-n2.local 192.168.18.210
+        - k8sm.home.arpa 192.168.18.131
+        - k8sn1.home.arpa 192.168.18.136
+        - k8sn2.home.arpa 192.168.18.137
 
     - name: "Install prerequesites"
       dnf:
