@@ -19,9 +19,9 @@
         line: "{{ item }}"
         state: present
       loop:
-        - k8sm.home.arpa 192.168.18.131
-        - k8sn1.home.arpa 192.168.18.136
-        - k8sn2.home.arpa 192.168.18.137
+        - k8sm.home.arpa 192.168.49.8
+        - k8sn1.home.arpa 192.168.49.10
+        - k8sn2.home.arpa 192.168.49.9
 
     - name: "Install prerequesites"
       dnf:
@@ -110,9 +110,9 @@
     - name: "Install kubernetes components"
       dnf:
         name:
-          - kubelet-1.26.1
-          - kubeadm-1.26.1
-          - kubectl-1.26.1
+          - kubelet-1.29.2
+          - kubeadm-1.29.2
+          - kubectl-1.29.2
         state: present
         disable_excludes: kubernetes
 
