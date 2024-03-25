@@ -2,11 +2,11 @@
 - hosts: k8smaster
   become: yes
   tasks:
-    - name: initialize the cluster
-      shell: kubeadm init --pod-network-cidr=192.168.192.0/18 >> cluster_initialized.txt
-      args:
-        chdir: $HOME
-        creates: cluster_initialized.txt
+    # - name: initialize the cluster
+    #   shell: kubeadm init --pod-network-cidr=192.168.192.0/18 >> cluster_initialized.txt
+    #   args:
+    #     chdir: $HOME
+    #     creates: cluster_initialized.txt
 
     - name: create .kube directory
       become: yes

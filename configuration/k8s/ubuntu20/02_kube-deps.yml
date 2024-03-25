@@ -1,7 +1,25 @@
 ---
-- hosts: all
+- hosts: k8scluster
   become: yes
+  vars:
+    k8s_url_apt_key: "https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key"
+    k8s_gpgpath: /usr/share/keyrings/kubernetes-apt-keyring.gpg
+    k8s_repository: "https://pkgs.k8s.io/core:/stable:/v1.28/deb/"
+
   tasks:
+   - name: Remove swapfile from /etc/fstab
+     mount:
+      name: "{{ item }}"
+      fstype: swap
+      state: absent
+     with_items:
+      - swap
+      - none
+
+   - name: Disable swap
+     command: swapoff -a
+     when: ansible_swaptotal_mb > 0
+
    - name: create Docker config directory
      file: path=/etc/docker state=directory
 
@@ -24,33 +42,32 @@
        name: apt-transport-https
        state: present
 
-   - name: add Kubernetes apt-key
-     apt_key:
-       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-       state: present
+   - name: Get Kubernetes package key
+     shell: curl -fsSL {{ k8s_url_apt_key }} | gpg --dearmor -o {{ k8s_gpgpath }}
+     args:
+      creates: "{{ k8s_gpgpath }}"
 
-   - name: add Kubernetes' APT repository
+   - name: Install Kubernetes repository
      apt_repository:
-      repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
-      state: present
-      filename: 'kubernetes'
+        filename: kubernetes
+        repo: "deb [signed-by={{ k8s_gpgpath }}] {{ k8s_repository }} /"
 
    - name: install kubelet
      apt:
-       name: kubelet=1.29.2
+       name: kubelet
        state: present
        update_cache: true
 
    - name: install kubeadm
      apt:
-       name: kubeadm=1.29.2
+       name: kubeadm
        state: present
 
-- hosts: control_plane
+- hosts: k8smaster
   become: yes
   tasks:
    - name: install kubectl
      apt:
-       name: kubectl=1.29.2
+       name: kubectl
        state: present
        force: yes
